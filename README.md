@@ -22,7 +22,7 @@ seatrac and seatrac_interfaces are standard ros2 packages. Clone this repository
 	* ModemStatus -  returned when a status message is received. Related topic is modem_status.
 	* ModemCmdUpdate - captures short status and error codes. Related topic is modem_cmd_update.
 
-## Usage:
+## Usage
 
 1. Source your local ros2 distibution `source /opt/ros/<distro>/setup.bash`.
 2. Build the workspace and source local setup: `colcon build && source ./install/setup.bash`
