@@ -30,7 +30,7 @@ seatrac and seatrac_interfaces are standard ros2 packages. Clone this repository
 
 ## Reading messages from the beacon
 
-The three ros2 messages published from the seatrac beacon are modem_rec, modem_status, and modem_cmd_update. ModemRec is published anytime the beacon receives an acoustic message and includes directional and ranging information. ModemStatus is published anytime the driver recieves a CID_STATUS update from the beacon. ModemCmdUpdate is published anytime the beacon receives an error message or command status update.
+The three ros2 topics published from the seatrac beacon are modem_rec, modem_status, and modem_cmd_update. ModemRec is published anytime the beacon receives an acoustic message and includes directional and ranging information. ModemStatus is published anytime the driver recieves a CID_STATUS update from the beacon. ModemCmdUpdate is published anytime the beacon receives an error message or command status update.
 
 ## Sending acoustic messages
 
