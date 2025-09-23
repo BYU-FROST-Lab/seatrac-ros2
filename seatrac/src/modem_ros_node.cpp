@@ -18,7 +18,7 @@
 #include "seatrac_interfaces/msg/modem_send.hpp"
 
 
-#define DEFAULT_SERIAL_PORT "/dev/frost/rs232_connector_seatrac"
+#define DEFAULT_SERIAL_PORT "/dev/ttyUSB0"
 
 #define QUEUE_WARN_SIZE 8
 
@@ -37,9 +37,6 @@ using namespace narval::seatrac;
  * with information on acoustic transmissions, modem_status with regular 
  * beacon status updates, and modem_cmd_update with command status codes and 
  * error codes. It broadcasts an acoustic message when it recieves modem_send.
- * 
- * Code copied from 
- * https://bitbucket.org/frostlab/seatrac_driver/src/main/tools/ros2_seatrac_ws/seatrac/src/modem_ros_node.cpp
  * 
  * Subscribes:
  * - modem_send (seatrac_interfaces/msg/ModemSend)
@@ -68,7 +65,7 @@ public:
     /**
      * @param vehicle_ID
      *
-     * The Coug-UV vehicle ID, used to set the beacon ID.
+     * The vehicle ID, used to set the beacon ID.
      * The beacon ID is used to address acoustic messages.
      * An integer between 1 and 15 inclusive.
      */

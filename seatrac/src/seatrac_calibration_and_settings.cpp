@@ -10,7 +10,7 @@ using namespace std::chrono_literals;
 using namespace narval::seatrac;
 using std::string;
 
-#define DEFAULT_SERIAL_PORT "/dev/frost/rs232_connector_seatrac"
+#define DEFAULT_SERIAL_PORT "/dev/ttyUSB0"
 
 
 /**
@@ -37,7 +37,6 @@ class CalibrationDriver : public SeatracDriver
     void on_message(CID_E msgId, const std::vector<uint8_t>& data) {
         switch(msgId) {
             default:
-                //std::cout << "Got message : " << msgId << std::endl << std::flush;
                 break;
 
             case CID_STATUS: {
