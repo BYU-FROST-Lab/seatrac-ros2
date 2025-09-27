@@ -45,8 +45,8 @@ public:
          * @param ping_delay_seconds
          * 
          * The time between a ping from any vehicle in the water. For example
-         * if Coug 1, Coug 2, and Coug 3 are pinging each other in that order,
-         * then this would be the time between pings from Coug 1 and Coug 2.
+         * if vehicle 1, vehicle 2, and vehicle 3 are pinging each other in that order,
+         * then this would be the time between pings from Vehicle 1 and Vehicle 2.
          * WARNING: ping_delay_seconds should be the same for all vehicles.
          */
         this->declare_parameter<int>("ping_delay_seconds", 0);
@@ -69,12 +69,13 @@ public:
          * Also used to set the vehicle_order if vehicle_order is undefined.
          */
         this->declare_parameter<int>("vehicle_ID", 1);
+
         /**
          * @param vehicle_order
          * 
          * If specified, the position of this vehicle in the ping order. 
-         * By default this will be the vehicle_ID, so coug1
-         * will ping first, then coug2, etc.
+         * By default this will be the vehicle_ID, so vehicle 1
+         * will ping first, then vehicle 2, etc.
          * 
          * WARNING: If specified, vehicle_order should different for all vehicles.
          * If two vehicles have the same vehicle_order, they will send pings 
@@ -120,11 +121,8 @@ public:
 
         modem_publisher_ = this->create_publisher<ModemSend>("modem_send", 10);
 
-
         init_subscription_ = this->create_subscription<std_msgs::msg::Empty>(
             "init", 10, std::bind(&SeatracPinger::repeat_call_ping, this, _1));
-
-        // std::thread(&SeatracPinger::repeat_call_ping, this).detach();
     }
 
 private:
@@ -143,7 +141,6 @@ private:
         init_flag = true;
         int total_seconds_per_round = ping_delay_ * n_vehicles_;
         int my_ping_second = ping_delay_ * (vehicle_order_ - 1);
-
 
         while (rclcpp::ok())
         {
