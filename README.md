@@ -11,7 +11,7 @@ seatrac and seatrac_interfaces are standard ros2 packages. Clone this repository
 
 ## Overview
 
-* seatrac - A package to interface with the seatrac beacon. It contains two nodes
+* seatrac - A package to interface with the seatrac beacon. It contains two nodes and an executable
 	* modem_ros_node: The main node that interfaces with the beacon.  Call `ros2 run seatrac modem` to run.
 	* modem_pinger: A node that repeatedly sends an acoustic ping to another beacon on a timer.  Call `ros2 run seatrac modem_pinger` to run.
 	* seatrac_calibration_and_settings: A terminal program to change settings and calibrate a beacon before launch. Call `ros2 run seatrac calibration_and_settings` to use.
