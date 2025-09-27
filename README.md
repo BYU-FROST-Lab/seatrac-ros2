@@ -17,10 +17,10 @@ seatrac and seatrac_interfaces are standard ros2 packages. Clone this repository
 	* seatrac_calibration_and_settings: A terminal program to change settings and calibrate a beacon before launch. Call `ros2 run seatrac calibration_and_settings` to use.
 
 * seatrac_interfaces - A package with 4 interfaces:
-	* ModemSend   -  instructs the beacon to send acoustic messages. Related topic is modem_send.
-	* ModemRec    -  returned when an acoustic signal is received. Related topic is modem_rec.
-	* ModemStatus -  returned when a status message is received. Related topic is modem_status.
-	* ModemCmdUpdate - captures short status and error codes. Related topic is modem_cmd_update.
+	* ModemSend   -  instructs the beacon to send acoustic messages.
+	* ModemRec    -  returned when an acoustic signal is received. 
+	* ModemStatus -  returned when a status message is received.
+	* ModemCmdUpdate - captures short status and error codes.
 
 ## Usage
 
