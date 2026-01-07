@@ -3,7 +3,7 @@
 <package format="3">
   <name>seatrac_interfaces</name>
   <version>1.0.0</version>
-  <description>Ros messages for interfacing with the seatrac x100 series usbl beacon</description>
+  <description>Ros messages for interfacing with the Seatrac x100 series usbl beacons</description>
   <maintainer email="claytonsmith3.14@gmail.com">Clayton Smith</maintainer>
   <license>Apache License 2.0</license>
 

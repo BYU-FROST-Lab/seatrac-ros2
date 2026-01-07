@@ -1,12 +1,12 @@
 #include <rclcpp/rclcpp.hpp>
-#include "seatrac_interfaces/msg/modem_send.hpp"
+#include "seatrac_interfaces/msg/seatrac_send.hpp"
 #include <seatrac_driver/SeatracEnums.h>
 #include "std_msgs/msg/empty.hpp"
 #include <chrono>
 #include <thread>
 
 using namespace std::chrono_literals;
-using seatrac_interfaces::msg::ModemSend;
+using seatrac_interfaces::msg::SeatracSend;
 using namespace narval::seatrac;
 
 using std::placeholders::_1;
@@ -34,12 +34,12 @@ using std::placeholders::_1;
  * 
  * 
  * Publishes:
- * - modem_send (seatrac_interfaces/msg/ModemSend)
+ * - seatrac/send (seatrac_interfaces/msg/SeatracSend)
  */
 class SeatracPinger : public rclcpp::Node
 {
 public:
-    SeatracPinger() : Node("modem_pinger")
+    SeatracPinger() : Node("seatrac_pinger")
     {
         /**
          * @param ping_delay_seconds
@@ -119,7 +119,7 @@ public:
         this->target_id_ = this->get_parameter("target_id").as_int();
         this->request_response_ = this->get_parameter("request_response").as_bool();
 
-        modem_publisher_ = this->create_publisher<ModemSend>("modem_send", 10);
+        seatrac_publisher_ = this->create_publisher<SeatracSend>("seatrac/send", 10);
 
         init_subscription_ = this->create_subscription<std_msgs::msg::Empty>(
             "init", 10, std::bind(&SeatracPinger::repeat_call_ping, this, _1));
@@ -132,7 +132,7 @@ private:
     int target_id_;
     bool request_response_;
     rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr init_subscription_;
-    rclcpp::Publisher<ModemSend>::SharedPtr modem_publisher_;
+    rclcpp::Publisher<SeatracSend>::SharedPtr seatrac_publisher_;
     bool init_flag = false;
 
     void repeat_call_ping(const std_msgs::msg::Empty::SharedPtr msg)
@@ -159,11 +159,11 @@ private:
 
     void send_ping()
     {
-        auto request = ModemSend();
+        auto request = SeatracSend();
         request.msg_id = CID_E::CID_DAT_SEND;
         request.dest_id = target_id_;
         request.msg_type = request_response_ ? AMSGTYPE_E::MSG_REQU : AMSGTYPE_E::MSG_OWAYU;
-        modem_publisher_->publish(request);
+        seatrac_publisher_->publish(request);
     }
 };
 

@@ -12,10 +12,10 @@
 #include <seatrac_driver/messages/Messages.h>
 
 #include "rclcpp/rclcpp.hpp"
-#include "seatrac_interfaces/msg/modem_rec.hpp"
-#include "seatrac_interfaces/msg/modem_status.hpp"
-#include "seatrac_interfaces/msg/modem_cmd_update.hpp"
-#include "seatrac_interfaces/msg/modem_send.hpp"
+#include "seatrac_interfaces/msg/seatrac_rec.hpp"
+#include "seatrac_interfaces/msg/seatrac_status.hpp"
+#include "seatrac_interfaces/msg/seatrac_cmd_update.hpp"
+#include "seatrac_interfaces/msg/seatrac_send.hpp"
 
 
 #define DEFAULT_SERIAL_PORT "/dev/ttyUSB0"
@@ -33,34 +33,34 @@ using namespace narval::seatrac;
  * @author Clayton Smith
  * @date September 2024
  * 
- * This node interfaces with the seatrac x150 beacon. It publishes modem_rec 
- * with information on acoustic transmissions, modem_status with regular 
- * beacon status updates, and modem_cmd_update with command status codes and 
- * error codes. It broadcasts an acoustic message when it recieves modem_send.
+ * This node interfaces with the seatrac x150 beacon. It publishes seatrac_rec 
+ * with information on acoustic transmissions, seatrac_status with regular 
+ * beacon status updates, and seatrac_cmd_update with command status codes and 
+ * error codes. It broadcasts an acoustic message when it recieves seatrac_send.
  * 
  * Subscribes:
- * - modem_send (seatrac_interfaces/msg/ModemSend)
+ * - seatrac/send (seatrac_interfaces/msg/SeatracSend)
  * Publishes:
- * - modem_rec (seatrac_interfaces/msg/ModemRec)
- * - modem_status (seatrac_interfaces/msg/ModemStatus)
- * - modem_cmd_update (seatrac_interfaces/msg/ModemCmdUpdate)
+ * - seatrac/rec (seatrac_interfaces/msg/SeatracRec)
+ * - seatrac/status (seatrac_interfaces/msg/SeatracStatus)
+ * - seatrac/cmd_update (seatrac_interfaces/msg/SeatracCmdUpdate)
  */
-class ModemRosNode : public rclcpp::Node, public SeatracDriver {
+class SeatracNode : public rclcpp::Node, public SeatracDriver {
 public:
 
-  ModemRosNode()
-      : Node("modem_ros_node"), SeatracDriver(this->get_serial_port()), count_(0) {
-    RCLCPP_INFO(this->get_logger(), "Starting seatrac modem Node");
+  SeatracNode()
+      : Node("seatrac_node"), SeatracDriver(this->get_serial_port()), count_(0) {
+    RCLCPP_INFO(this->get_logger(), "starting seatrac_node");
     rec_pub_ =
-        this->create_publisher<seatrac_interfaces::msg::ModemRec>("modem_rec", 10);
-    status_pub_ = this->create_publisher<seatrac_interfaces::msg::ModemStatus>("modem_status", 10);
+        this->create_publisher<seatrac_interfaces::msg::SeatracRec>("seatrac/rec", 10);
+    status_pub_ = this->create_publisher<seatrac_interfaces::msg::SeatracStatus>("seatrac/status", 10);
     cmd_update_pub_ =
-        this->create_publisher<seatrac_interfaces::msg::ModemCmdUpdate>("modem_cmd_update", 10);
+        this->create_publisher<seatrac_interfaces::msg::SeatracCmdUpdate>("seatrac/cmd_update", 10);
     subscriber_ = 
-        this->create_subscription<seatrac_interfaces::msg::ModemSend>("modem_send", 10,
-                      std::bind(&ModemRosNode::modem_send_callback, this, _1));
+        this->create_subscription<seatrac_interfaces::msg::SeatracSend>("seatrac/send", 10,
+                      std::bind(&SeatracNode::seatrac_send_callback, this, _1));
     queue_refresh_timer_ = this->create_wall_timer(
-      100ms, std::bind(&ModemRosNode::refresh_queue, this));
+      100ms, std::bind(&SeatracNode::refresh_queue, this));
 
     /**
      * @param vehicle_ID
@@ -129,7 +129,7 @@ public:
   }
 
   // this method is called on any message returned by the beacon.
-  // it copies the modem data to a ros message of type ModemRec
+  // it copies the seatrac data to a ros message of type SeatracRec
   void on_message(CID_E msgId, const std::vector<uint8_t> &data) {
     auto timestamp = this->get_clock()->now();
     switch (msgId) {
@@ -137,7 +137,7 @@ public:
         //RCLCPP_INFO(this->get_logger(), "Received unknown message from seatrac modem. msgId: %d", msgId); 
       } break;
       case CID_DAT_RECEIVE: {
-        auto msg = seatrac_interfaces::msg::ModemRec();
+        auto msg = seatrac_interfaces::msg::SeatracRec();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::DataReceive report;     //struct that contains report fields
@@ -150,7 +150,7 @@ public:
       } break;
 
       case CID_DAT_ERROR: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::DataError report;
@@ -164,7 +164,7 @@ public:
       } break;
 
       case CID_DAT_SEND: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::DataSend report;
@@ -177,7 +177,7 @@ public:
       } break;
 
       case CID_DAT_QUEUE_SET: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::DataQueueSet report;
@@ -190,7 +190,7 @@ public:
       } break;
 
       case CID_ECHO_RESP: {
-        auto msg = seatrac_interfaces::msg::ModemRec();
+        auto msg = seatrac_interfaces::msg::SeatracRec();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::EchoResp report;     //struct that contains report fields
@@ -203,7 +203,7 @@ public:
       } break;
 
       case CID_ECHO_REQ: {
-        auto msg = seatrac_interfaces::msg::ModemRec();
+        auto msg = seatrac_interfaces::msg::SeatracRec();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::EchoReq report;
@@ -215,7 +215,7 @@ public:
       } break;
 
       case CID_ECHO_ERROR: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::EchoError report;
@@ -229,7 +229,7 @@ public:
       } break;
 
       case CID_ECHO_SEND: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::EchoSend report;
@@ -241,7 +241,7 @@ public:
       } break;
 
       case CID_PING_RESP: {
-        auto msg = seatrac_interfaces::msg::ModemRec();
+        auto msg = seatrac_interfaces::msg::SeatracRec();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::PingResp report;
@@ -253,7 +253,7 @@ public:
       } break;
 
       case CID_PING_REQ: {
-        auto msg = seatrac_interfaces::msg::ModemRec();
+        auto msg = seatrac_interfaces::msg::SeatracRec();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::PingReq report;
@@ -265,7 +265,7 @@ public:
       } break;
 
       case CID_PING_ERROR: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::PingError report;
@@ -279,7 +279,7 @@ public:
       } break;
 
       case CID_PING_SEND: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::PingSend report;
@@ -291,7 +291,7 @@ public:
       } break;
 
       case CID_NAV_QUERY_RESP: {
-        auto msg = seatrac_interfaces::msg::ModemRec();
+        auto msg = seatrac_interfaces::msg::SeatracRec();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::NavQueryResp report;
@@ -318,7 +318,7 @@ public:
       } break;
 
       case CID_NAV_QUERY_REQ: {
-        auto msg = seatrac_interfaces::msg::ModemRec();
+        auto msg = seatrac_interfaces::msg::SeatracRec();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::NavQueryReq report;
@@ -332,7 +332,7 @@ public:
       } break;
 
       case CID_NAV_ERROR: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::NavError report;
@@ -346,7 +346,7 @@ public:
       } break;
 
       case CID_NAV_QUERY_SEND: {
-        auto msg = seatrac_interfaces::msg::ModemCmdUpdate();
+        auto msg = seatrac_interfaces::msg::SeatracCmdUpdate();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::NavQuerySend report;
@@ -359,7 +359,7 @@ public:
 
       // Fields don't match the ros message types provided.
       // case CID_XCVR_RX_ERR: {
-      //   auto msg = seatrac_interfaces::msg::ModemRec();
+      //   auto msg = seatrac_interfaces::msg::SeatracRec();
       //   msg.msg_id = msgId;
       //   messages::XcvrReceptionError report;
       //   report = data;
@@ -368,7 +368,7 @@ public:
       // } break;
 
       case CID_STATUS: {
-        auto msg = seatrac_interfaces::msg::ModemStatus();
+        auto msg = seatrac_interfaces::msg::SeatracStatus();
         msg.header.stamp = timestamp;
         msg.msg_id = msgId;
         messages::Status report;
@@ -404,8 +404,8 @@ public:
       } break;
     }
   }
-  //copies the fields from the acofix struct into the ModemRec ros message
-  inline void cpyFixtoRosmsg(seatrac_interfaces::msg::ModemRec& msg, ACOFIX_T& acoFix) {
+  //copies the fields from the acofix struct into the SeatracRec ros message
+  inline void cpyFixtoRosmsg(seatrac_interfaces::msg::SeatracRec& msg, ACOFIX_T& acoFix) {
     msg.dest_id = acoFix.destId;
     msg.src_id  = acoFix.srcId;
 
@@ -451,12 +451,12 @@ public:
 
 private:
 
-  rclcpp::Publisher<seatrac_interfaces::msg::ModemRec>::SharedPtr rec_pub_;
-  rclcpp::Publisher<seatrac_interfaces::msg::ModemStatus>::SharedPtr status_pub_;
-  rclcpp::Publisher<seatrac_interfaces::msg::ModemCmdUpdate>::SharedPtr cmd_update_pub_;
-  rclcpp::Subscription<seatrac_interfaces::msg::ModemSend>::SharedPtr subscriber_;
+  rclcpp::Publisher<seatrac_interfaces::msg::SeatracRec>::SharedPtr rec_pub_;
+  rclcpp::Publisher<seatrac_interfaces::msg::SeatracStatus>::SharedPtr status_pub_;
+  rclcpp::Publisher<seatrac_interfaces::msg::SeatracCmdUpdate>::SharedPtr cmd_update_pub_;
+  rclcpp::Subscription<seatrac_interfaces::msg::SeatracSend>::SharedPtr subscriber_;
 
-  std::queue<seatrac_interfaces::msg::ModemSend::SharedPtr> send_queue;
+  std::queue<seatrac_interfaces::msg::SeatracSend::SharedPtr> send_queue;
   std::mutex send_mutex;
   rclcpp::Time time_last_sent;
   rclcpp::TimerBase::SharedPtr queue_refresh_timer_;
@@ -472,9 +472,9 @@ private:
     return this->get_parameter("seatrac_serial_port").as_string();
   }
 
-  // recieves command to modem from the ModemRec topic and sends the command
-  // to the modem
-  void modem_send_callback(const seatrac_interfaces::msg::ModemSend::SharedPtr rosmsg) {
+  // recieves command to seatrac from the SeatracRec topic and sends the command
+  // to the seatrac
+  void seatrac_send_callback(const seatrac_interfaces::msg::SeatracSend::SharedPtr rosmsg) {
     std::lock_guard<std::mutex> lock(send_mutex);  //locks mutex until method exits
     send_queue.push(rosmsg);
     attempt_send_acoustic_message();
@@ -499,7 +499,7 @@ private:
       send_delay_ticker = 5; //400ms for 4 ticks at 10Hz (subtracting this tick)
     }
   }
-  void send_acoustic_message(const seatrac_interfaces::msg::ModemSend::SharedPtr rosmsg) {
+  void send_acoustic_message(const seatrac_interfaces::msg::SeatracSend::SharedPtr rosmsg) {
     if(!beacon_connected) return;
     CID_E msgId = static_cast<CID_E>(rosmsg->msg_id);
 
@@ -511,7 +511,7 @@ private:
       } break;
       
       case CID_DAT_SEND: {
-        messages::DataSend::Request req; //struct contains message to send to modem
+        messages::DataSend::Request req; //struct contains message to send to seatrac
         req.destId    = static_cast<BID_E>(rosmsg->dest_id);
         req.msgType   = static_cast<AMSGTYPE_E>(rosmsg->msg_type);
         req.packetLen = std::min(rosmsg->packet_len, (uint8_t)sizeof(req.packetData));
@@ -528,7 +528,7 @@ private:
       } break;
 
       case CID_ECHO_SEND: {
-        messages::EchoSend::Request req; //struct contains message to send to modem
+        messages::EchoSend::Request req; //struct contains message to send to seatrac
         req.destId    = static_cast<BID_E>(rosmsg->dest_id);
         req.msgType   = static_cast<AMSGTYPE_E>(rosmsg->msg_type);
         req.packetLen = std::min(rosmsg->packet_len, (uint8_t)sizeof(req.packetData));
@@ -553,7 +553,7 @@ private:
     }
   }
 
-  inline void handle_send_update(seatrac_interfaces::msg::ModemCmdUpdate* rosmsg) {
+  inline void handle_send_update(seatrac_interfaces::msg::SeatracCmdUpdate* rosmsg) {
     std::lock_guard<std::mutex> lock(send_mutex);
     switch(rosmsg->command_status_code) {
       case CST_OK: {
@@ -608,8 +608,8 @@ private:
 
 int main(int argc, char *argv[]) {
   rclcpp::init(argc, argv);
-  auto modem_ros_node = std::make_shared<ModemRosNode>();
-  rclcpp::spin(modem_ros_node);
+  auto seatrac_ros_node = std::make_shared<SeatracRosNode>();
+  rclcpp::spin(seatrac_ros_node);
   rclcpp::shutdown();
   return 0;
 }
